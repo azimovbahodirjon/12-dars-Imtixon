@@ -1,33 +1,48 @@
-import React from "react";
-import Center from "./components/Center";
-import Header from "./components/Header";
-import { AnimatePresence } from "framer-motion";
-import { Routes, Route, useLocation } from "react-router-dom";
-import InvoiceInfo from "./components/InvoiceInfo";
-import invoiceSlice from "./app/invoiceSlice";
-import { useDispatch } from "react-redux";
+import React, { useEffect } from "react";
+import { Routes, Route } from "react-router-dom";
+import Invoices from "./pages/Invoices";
+import InvoicesD from "./pages/InvoicesD";
+import MainLayout from "./Layout/MainLayout";
+import useThemeStore from "./store/useThemeStore";
 
 function App() {
-  const location = useLocation();
-  const dispatch = useDispatch();
+  const { theme, setTheme } = useThemeStore();
 
-  const onDelete = (id) => {
-    dispatch(invoiceSlice.actions.deleteInvoice({ id: id }));
-  };
+  useEffect(() => {
+    const savedTheme = localStorage.getItem("theme") || "light";
+    setTheme(savedTheme);
+
+    if (savedTheme === "dark") {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+  }, [setTheme]);
 
   return (
-    <div className=" dark:bg-[#141625] duration-300 min-h-screen bg-[#f8f8fb]">
-      <Header />
-
-      <AnimatePresence mode="wait">
-        <Routes location={location} key={location.pathname}>
-          <Route element={<Center />} path="" />
-          <Route
-            element={<InvoiceInfo onDelete={onDelete} />}
-            path="/invoice"
-          />
-        </Routes>
-      </AnimatePresence>
+    <div
+      className={`${
+        theme === "light" ? "bg-[#F8F8FB]" : "bg-[#141625]"
+      } min-h-svh`}
+    >
+      <Routes>
+        <Route
+          path="/"
+          element={
+            <MainLayout>
+              <Invoices />
+            </MainLayout>
+          }
+        />
+        <Route
+          path="/:id"
+          element={
+            <MainLayout>
+              <InvoicesD />
+            </MainLayout>
+          }
+        />
+      </Routes>
     </div>
   );
 }

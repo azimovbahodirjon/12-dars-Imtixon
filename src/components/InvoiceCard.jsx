@@ -1,61 +1,100 @@
 import React from "react";
-import PaidStatus from "./PaidStatus";
-import rightArrow from "../assets/icon-arrow-right.svg";
-import { Link } from "react-router-dom";
+import useThemeStore from "../store/useThemeStore";
+import { useNavigate } from "react-router-dom";
+import PropTypes from "prop-types";
 
 function InvoiceCard({ invoice }) {
+  const { theme } = useThemeStore();
+  const navigate = useNavigate();
+
+  function handleRedirect(id) {
+    navigate(`/${id}`, { state: { invoice } });
+  }
+
   return (
-    <Link to={`invoice?${invoice.id}`}>
-      {/* Big Screen  */}
-      <div className=" hidden md:flex cursor-pointer duration-100  ease-in-out  hover:border border-purple-500 py-4 shadow-sm px-6 dark:bg-[#1E2139] bg-white rounded-lg  items-center justify-between">
-        <div className=" flex items-center ">
-          <h2 className=" dark:text-white ">
-            <span className=" text-[#7e88c3]">#</span>
+    <div
+      onClick={() => handleRedirect(invoice.id)}
+      className="transition-all hover:-translate-2 sm:px-6 mt-4 flex flex-col gap-[16px]"
+    >
+      <div
+        className={`${
+          theme === "dark"
+            ? "text-white shadow-md bg-[#1E2139]"
+            : "text-black drop-shadow-md bg-white"
+        } sm:w-full rounded-lg p-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 cursor-pointer hover:drop-shadow-lg transition-all`}
+      >
+        <div className="flex justify-between items-center sm:justify-start sm:gap-8 w-full sm:w-auto">
+          <h2 className="font-extrabold text-sm">
+            <span className="text-[#7E88C3]">#</span>
             {invoice.id}
           </h2>
-
-          <h2 className=" text-sm text-gray-400 font-light ml-6">
-            Due {invoice.paymentDue}
-          </h2>
-
-          <h2 className=" text-sm text-gray-400 font-light ml-10">
-            {invoice.clientName}
-          </h2>
+          <h2 className="sm:block">{invoice.clientName}</h2>
         </div>
 
-        <div className="  flex  items-center ">
-          <h1 className=" text-xl mr-8  dark:text-white">£ {invoice.total}</h1>
+        <div className="w-full sm:w-auto flex justify-between sm:justify-start sm:gap-8">
+          <div className="md:flex md:items-center md:gap-[73px]">
+            <p
+              className={`${
+                theme === "dark" ? "text-[#DFE3FA]" : "text-[#888EB0]"
+              } text-xs xl:flex`}
+            >
+              {invoice.paymentDue}
+            </p>
+            <h2 className="font-bold text-lg">£{invoice.total.toFixed(2)}</h2>
+          </div>
 
-          <PaidStatus type={invoice.status} />
-
-          <img src={rightArrow} className=" ml-4" />
+          <div
+            className={`${
+              theme === "dark"
+                ? `${
+                    invoice.status === "paid"
+                      ? "bg-[#1F2B3F]"
+                      : invoice.status === "draft"
+                      ? "bg-[#292C44]"
+                      : "bg-[#2B2736]"
+                  } `
+                : "bg-[#F3FDFA]"
+            } flex items-center justify-center rounded-md gap-2 w-[104px] h-10`}
+          >
+            <div
+              className={`w-2 h-2 rounded-full ${
+                invoice.status === "paid"
+                  ? "bg-[#33D69F]"
+                  : invoice.status === "draft"
+                  ? theme === "dark"
+                    ? "bg-[#fff]"
+                    : "bg-[#373B53]"
+                  : "bg-[#FF8F00]"
+              } ${theme === "dark" ? "text-white" : "text-black"}`}
+            ></div>
+            <h2
+              className={`${
+                invoice.status === "paid"
+                  ? "text-[#33D69F]"
+                  : invoice.status === "draft"
+                  ? theme === "dark"
+                    ? "text-[#fff]"
+                    : "text-black"
+                  : "text-[#FF8F00]"
+              } text-sm`}
+            >
+              {invoice.status}
+            </h2>
+          </div>
         </div>
       </div>
-
-      {/* Phone Screen */}
-      <div className=" md:hidden flex cursor-pointer hover:border border-purple-500 py-4 shadow-sm px-6 dark:bg-[#1E2139] bg-white rounded-lg  items-center justify-between">
-        <div className=" flex flex-col">
-          <h2 className=" dark:text-white ">
-            <span className=" text-[#7e88c3]">#</span>
-            {invoice.id}
-          </h2>
-
-          <h2 className=" text-sm text-gray-400 font-light mt-3 ">
-            Due {invoice.paymentDue}
-          </h2>
-          <h1 className=" text-xl  dark:text-white">£ {invoice.total}</h1>
-        </div>
-
-        <div className=" flex   flex-col">
-          <h2 className=" text-sm mb-4 text-gray-400 font-light  text-right  ">
-            {invoice.clientName}
-          </h2>
-
-          <PaidStatus type={invoice.status} />
-        </div>
-      </div>
-    </Link>
+    </div>
   );
 }
+
+InvoiceCard.propTypes = {
+  invoice: PropTypes.shape({
+    id: PropTypes.string.isRequired,
+    clientName: PropTypes.string.isRequired,
+    paymentDue: PropTypes.string.isRequired,
+    total: PropTypes.number.isRequired,
+    status: PropTypes.string.isRequired,
+  }).isRequired,
+};
 
 export default InvoiceCard;
