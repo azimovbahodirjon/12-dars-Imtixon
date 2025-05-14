@@ -11,6 +11,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogClose,
 } from "@/components/ui/dialog";
 import {
   Table,
@@ -20,7 +21,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { DialogClose } from "@radix-ui/react-dialog";
 import { ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { useAppStore } from "../lib/zustand";
@@ -28,16 +28,17 @@ import { useAppStore } from "../lib/zustand";
 function Details() {
   const { id } = useParams();
   const navigate = useNavigate();
-
   const [invoice, setInvoice] = useState(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [updateLoading, setUpdateLoading] = useState(false);
-
   const { updateInvoices, setSheetOpen, setEditedData } = useAppStore();
 
   useEffect(() => {
     getInvoice(id)
-      .then(setInvoice)
+      .then((data) => {
+        if (!data || typeof data !== "object") throw new Error("Invalid data");
+        setInvoice(data);
+      })
       .catch((err) => toast.error(err.message));
   }, [id]);
 
@@ -164,12 +165,14 @@ function Details() {
                   </span>
                 </div>
 
-                <div className="flex flex-col gap-0 text-right text-xs text-gray-500 dark:text-gray-400">
-                  <span>{invoice.senderAddress.street}</span>
-                  <span>{invoice.senderAddress.city}</span>
-                  <span>{invoice.senderAddress.postCode}</span>
-                  <span>{invoice.senderAddress.country}</span>
-                </div>
+                {invoice.senderAddress && (
+                  <div className="flex flex-col gap-0 text-right text-xs text-gray-500 dark:text-gray-400">
+                    <span>{invoice.senderAddress.street}</span>
+                    <span>{invoice.senderAddress.city}</span>
+                    <span>{invoice.senderAddress.postCode}</span>
+                    <span>{invoice.senderAddress.country}</span>
+                  </div>
+                )}
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-8">
@@ -199,12 +202,14 @@ function Details() {
                   <h2 className="text-sm font-bold text-gray-900 dark:text-white">
                     {invoice.clientName}
                   </h2>
-                  <div className="flex flex-col text-xs text-gray-500 dark:text-gray-400">
-                    <span>{invoice.clientAddress.street}</span>
-                    <span>{invoice.clientAddress.city}</span>
-                    <span>{invoice.clientAddress.postCode}</span>
-                    <span>{invoice.clientAddress.country}</span>
-                  </div>
+                  {invoice.clientAddress && (
+                    <div className="flex flex-col text-xs text-gray-500 dark:text-gray-400">
+                      <span>{invoice.clientAddress.street}</span>
+                      <span>{invoice.clientAddress.city}</span>
+                      <span>{invoice.clientAddress.postCode}</span>
+                      <span>{invoice.clientAddress.country}</span>
+                    </div>
+                  )}
                 </div>
 
                 <div className="flex flex-col gap-2">
@@ -236,9 +241,8 @@ function Details() {
                     </TableHead>
                   </TableRow>
                 </TableHeader>
-
                 <TableBody>
-                  {invoice.items.map((item, index) => (
+                  {invoice.items?.map((item, index) => (
                     <TableRow key={index}>
                       <TableCell className="font-medium text-gray-900 dark:text-white">
                         {item.name || "N/A"}
@@ -247,16 +251,10 @@ function Details() {
                         {item.quantity || 0}
                       </TableCell>
                       <TableCell className="text-gray-500 dark:text-gray-400">
-                        £{" "}
-                        {item.price !== undefined && item.price !== null
-                          ? Number(item.price).toFixed(2)
-                          : "0.00"}
+                        £ {item.price ? Number(item.price).toFixed(2) : "0.00"}
                       </TableCell>
                       <TableCell className="text-right font-medium text-gray-900 dark:text-white">
-                        £{" "}
-                        {item.total !== undefined && item.total !== null
-                          ? Number(item.total).toFixed(2)
-                          : "0.00"}
+                        £ {item.total ? Number(item.total).toFixed(2) : "0.00"}
                       </TableCell>
                     </TableRow>
                   ))}
@@ -266,10 +264,7 @@ function Details() {
               <div className="flex justify-between bg-gray-600 dark:bg-gray-700 py-6 px-6 items-center rounded-b-2xl text-white">
                 <p className="text-sm">Amount Due</p>
                 <h3 className="text-xl font-bold">
-                  £{" "}
-                  {invoice.total !== undefined && invoice.total !== null
-                    ? Number(invoice.total).toFixed(2)
-                    : "0.00"}
+                  £ {invoice.total ? Number(invoice.total).toFixed(2) : "0.00"}
                 </h3>
               </div>
             </div>
