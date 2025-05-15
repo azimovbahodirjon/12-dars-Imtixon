@@ -80,11 +80,9 @@ export default function Form({ info, setSheetOpen }) {
       .then((res) => {
         updateInvoices(res);
         toast.success(
-          `${
-            sending.mode === "add"
-              ? "Muvaffaqiyatli qo'shildi"
-              : "Muvaffaqiyatli tahrirlandi"
-          } ✅`
+          sending.mode === "add"
+            ? "Muvaffaqiyatli qo'shildi ✅"
+            : "Muvaffaqiyatli tahrirlandi ✅"
         );
         setSheetOpen(false);
         if (sending.mode === "edit") navigate(-1);

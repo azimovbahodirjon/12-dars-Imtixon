@@ -6,45 +6,32 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
-import { ArrowBigDown, Moon } from "lucide-react";
+import { ArrowBigDown, Moon, Sun } from "lucide-react";
 import { Button } from "./ui/button";
 import { useAppStore } from "../lib/zustand";
-import { Sun } from "lucide-react";
 
 export default function ThemesToggle() {
   const { themes } = useAppStore();
-
   const [theme, setTheme] = useState(
     localStorage.getItem("theme") || "default"
   );
 
-  function handleTheme(type, mode) {
+  const handleTheme = (type, mode) => {
     const html = document.documentElement;
-    let isDark;
-    if (html.dataset.theme.startsWith("dark-")) {
-      isDark = true;
-    } else {
-      isDark = false;
-    }
+    const isDark = html.dataset.theme.startsWith("dark-");
 
     if (mode === "theme") {
-      if (isDark) {
-        html.dataset.theme = `dark-${type}`;
-        setTheme(`dark-${type}`);
-      } else {
-        html.dataset.theme = type;
-        setTheme(type);
-      }
+      const newTheme = isDark ? `dark-${type}` : type;
+      html.dataset.theme = newTheme;
+      setTheme(newTheme);
     } else if (mode === "dark") {
-      if (type.startsWith("dark-")) {
-        html.dataset.theme = type.replace("dark-", "");
-        setTheme(type.replace("dark-", ""));
-      } else {
-        html.dataset.theme = `dark-${type}`;
-        setTheme(`dark-${type}`);
-      }
+      const newTheme = type.startsWith("dark-")
+        ? type.replace("dark-", "")
+        : `dark-${type}`;
+      html.dataset.theme = newTheme;
+      setTheme(newTheme);
     }
-  }
+  };
 
   useEffect(() => {
     localStorage.setItem("theme", theme);
@@ -55,27 +42,43 @@ export default function ThemesToggle() {
   }, []);
 
   return (
-    <div className="flex gap-5 md:flex-col md:items-start">
+    <div className="flex flex-col items-center gap-3">
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="secondary">
-            <span className={"md:hidden"}>Change theme</span>
-            <ArrowBigDown />
+          <Button
+            variant="outline"
+            size="icon"
+            className="p-2 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 text-white hover:from-indigo-600 hover:to-purple-700 transition-all duration-300 shadow-md hover:shadow-lg"
+            aria-label="Select Theme"
+            title="Select Theme"
+          >
+            <ArrowBigDown className="h-5 w-5" />
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent className="w-56 ml-[80px]">
-          <DropdownMenuLabel>Themes</DropdownMenuLabel>
-          <DropdownMenuSeparator />
-          <div className="flex flex-col">
+
+        <DropdownMenuContent className="w-48 rounded-md shadow-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 relative z-[1000]">
+          <DropdownMenuLabel className="text-sm font-semibold px-4 pt-3">
+            Select Theme
+          </DropdownMenuLabel>
+          <DropdownMenuSeparator className="border-gray-300 dark:border-gray-600" />
+          <div className="flex flex-col gap-1 px-4 py-2">
             {themes.map((el) => {
+              const isActive =
+                theme === el ||
+                theme === `dark-${el}` ||
+                `dark-${theme}` === el;
+
               return (
                 <Button
                   key={el}
-                  onClick={() => {
-                    handleTheme(el, "theme");
-                  }}
-                  className={"justify-start"}
+                  onClick={() => handleTheme(el, "theme")}
+                  className={`justify-start text-left capitalize rounded-md transition-colors hover:bg-gray-200 dark:hover:bg-gray-700 ${
+                    isActive
+                      ? "bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-semibold"
+                      : ""
+                  }`}
                   variant="ghost"
+                  size="sm"
                 >
                   {el}
                 </Button>
@@ -86,12 +89,17 @@ export default function ThemesToggle() {
       </DropdownMenu>
 
       <Button
-        size={"icon"}
-        onClick={() => {
-          handleTheme(theme, "dark");
-        }}
+        size="icon"
+        onClick={() => handleTheme(theme, "dark")}
+        className="p-2 rounded-xl bg-gradient-to-r from-blue-500 to-teal-500 text-white hover:from-blue-600 hover:to-teal-600 transition-all duration-300 shadow-md hover:shadow-lg"
+        aria-label="Toggle Dark Mode"
+        title="Toggle Dark Mode"
       >
-        {theme.startsWith("dark-") ? <Sun /> : <Moon />}
+        {theme.startsWith("dark-") ? (
+          <Sun className="h-5 w-5 text-yellow-300" />
+        ) : (
+          <Moon className="h-5 w-5 text-white" />
+        )}
       </Button>
     </div>
   );

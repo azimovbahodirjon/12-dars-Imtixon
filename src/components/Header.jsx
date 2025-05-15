@@ -8,28 +8,21 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useEffect, useState } from "react";
 import { buttonVariants } from "./ui/button";
-import { Checkbox } from ".//ui/checkbox";
-import { ArrowBigDown, PlusCircleIcon, LogOut } from "lucide-react";
+import { Checkbox } from "./ui/checkbox";
+import { ArrowBigDown, PlusCircleIcon } from "lucide-react";
 import { useAppStore } from "../lib/zustand";
 import { queryGenerator } from "../lib/utils";
-import { signOut } from "firebase/auth";
-import { auth } from "../firebase/config";
-import { useNavigate } from "react-router-dom";
 
 export default function Header() {
-  const { setSheetOpen } = useAppStore();
-  const { setFilter } = useAppStore();
+  const { setSheetOpen, setFilter } = useAppStore();
   const [items, setItems] = useState({
     draft: false,
     paid: false,
     pending: false,
   });
-  const navigate = useNavigate();
 
   function handleChange(key) {
-    setItems((prev) => {
-      return { ...prev, [key]: !prev[key] };
-    });
+    setItems((prev) => ({ ...prev, [key]: !prev[key] }));
   }
 
   useEffect(() => {
@@ -37,67 +30,62 @@ export default function Header() {
     setFilter(query);
   }, [JSON.stringify(items)]);
 
-  const handleLogout = async () => {
-    await signOut(auth);
-    navigate("/login");
-  };
-
   return (
     <header>
-      <div className="base-container flex items-center justify-between py-10">
+      <div className="base-container flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between py-10">
         <div>
-          <h1 className="font-bold text-[20px]">Invoices</h1>
-          <p>There are 7 total invoices</p>
+          <h1 className="font-bold text-2xl text-foreground">Invoices</h1>
+          <p className="text-muted-foreground text-sm">
+            There are 7 total invoices
+          </p>
         </div>
-        <div className="flex items-center gap-4">
+
+        <div className="flex items-center gap-4 flex-wrap">
+          {/* Filter Dropdown */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button className={"mr-4"} variant="ghost">
+              <Button
+                className="flex items-center gap-2 text-sm rounded-xl"
+                variant="ghost"
+              >
                 Filter by status
-                <ArrowBigDown />
+                <ArrowBigDown className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-56">
-              <DropdownMenuLabel>Statuses</DropdownMenuLabel>
+
+            <DropdownMenuContent className="w-56 rounded-xl shadow-md">
+              <DropdownMenuLabel className="text-muted-foreground">
+                Statuses
+              </DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <div className="flex flex-col">
-                {Object.entries(items).map(([key, value]) => {
-                  return (
-                    <label
-                      key={key}
-                      className={`${buttonVariants({ variant: "ghost" })} 
-              justify-start capitalize`}
-                      htmlFor={key}
-                    >
-                      <Checkbox
-                        value={key}
-                        checked={value}
-                        onCheckedChange={() => handleChange(key)}
-                        id={key}
-                      />
-                      {key}
-                    </label>
-                  );
-                })}
+              <div className="flex flex-col gap-1 px-1">
+                {Object.entries(items).map(([key, value]) => (
+                  <label
+                    key={key}
+                    htmlFor={key}
+                    className={`${buttonVariants({
+                      variant: "ghost",
+                    })} justify-start gap-2 capitalize text-sm rounded-lg`}
+                  >
+                    <Checkbox
+                      id={key}
+                      checked={value}
+                      onCheckedChange={() => handleChange(key)}
+                    />
+                    {key}
+                  </label>
+                ))}
               </div>
             </DropdownMenuContent>
           </DropdownMenu>
 
+          {/* New Invoice Button */}
           <Button
-            className="bg-[#7C5DFA] w-[150px] h-12 rounded-3xl cursor-pointer hover:bg-[#9277FF]"
             onClick={setSheetOpen}
+            className="bg-[#7C5DFA] hover:bg-[#9277FF] text-white h-12 px-5 rounded-3xl flex items-center gap-2 shadow-sm transition duration-300"
           >
-            <PlusCircleIcon />
-            New Invoice
-          </Button>
-
-          <Button
-            variant="ghost"
-            className="bg-red-600 text-white w-[100px] h-12 rounded-3xl cursor-pointer hover:bg-red-700 hover:text-white ml-auto transition duration-300"
-            onClick={handleLogout}
-          >
-            <LogOut className="mr-2 h-4 w-4" />
-            Logout
+            <PlusCircleIcon className="w-5 h-5" />
+            <span className="text-sm font-medium">New Invoice</span>
           </Button>
         </div>
       </div>
